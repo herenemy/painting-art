@@ -27,6 +27,195 @@ const calcScroll = () => {
 
 /***/ }),
 
+/***/ "./src/js/modules/checkTextInputs.js":
+/*!*******************************************!*\
+  !*** ./src/js/modules/checkTextInputs.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+const checkTextInputs = selector => {
+  const inputs = document.querySelectorAll(selector);
+  inputs.forEach(input => {
+    input.addEventListener("keypress", e => {
+      let textMessage;
+      if (e.key.match(/[^а-яё 0-9]/gi)) {
+        e.preventDefault();
+        if (document.querySelector(".input-lang-validation")) return;
+        textMessage = document.createElement("div");
+        textMessage.textContent = "Введите текст на Русском!";
+        textMessage.classList.add("input-lang-validation");
+        if (input.getAttribute("name") === "name") {
+          document.querySelector(".input-wrapper").insertAdjacentElement("beforebegin", textMessage);
+        } else {
+          input.insertAdjacentElement("afterend", textMessage);
+        }
+      }
+    });
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (checkTextInputs);
+
+/***/ }),
+
+/***/ "./src/js/modules/forms.js":
+/*!*********************************!*\
+  !*** ./src/js/modules/forms.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+const forms = () => {
+  const form = document.querySelectorAll("form"),
+    input = document.querySelectorAll("input"),
+    textArea = document.querySelectorAll("textarea"),
+    upload = document.querySelectorAll('[name="upload"]');
+  const message = {
+    success: "Спасибо! Скоро мы свяжемся с вами.",
+    loading: "Загрузка...",
+    failure: "Что то пошло не так",
+    spinner: "assets/img/spinner.gif",
+    ok: "assets/img/ok.png",
+    fail: "assets/img/fail.png"
+  };
+  const clearInpurs = () => {
+    input.forEach(item => {
+      item.value = "";
+    });
+    textArea.forEach(item => {
+      item.value = "";
+    });
+  };
+  upload.forEach(item => {
+    item.addEventListener("input", () => {
+      let nameLength = item.files[0].name.split(".")[0].length;
+      let arr = [item.files[0].name.split(".")[0].substring(0, 6), item.files[0].name.split(".")[1]];
+      let dots;
+      nameLength < 6 ? dots = "." : dots = "...";
+      const output = arr[0] + dots + arr[1];
+      item.previousElementSibling.innerHTML = output;
+    });
+  });
+  const postData = async (url, data) => {
+    const res = await fetch(url, {
+      method: "POST",
+      body: data
+    });
+    return await res.text();
+  };
+  form.forEach(item => {
+    item.addEventListener("submit", e => {
+      e.preventDefault();
+      let statusMessage = document.createElement("div");
+      statusMessage.classList.add("status");
+      statusMessage.style.textAlign = "center";
+      item.parentNode.appendChild(statusMessage);
+      let statusImg = document.createElement("img");
+      statusImg.classList.add("animated", "fadeInUp");
+      statusImg.setAttribute("src", message.spinner);
+      statusMessage.appendChild(statusImg);
+      let statusText = document.createElement("p");
+      statusText.classList.add("animated", "fadeInUp");
+      statusText.textContent = message.loading;
+      statusMessage.appendChild(statusText);
+      let path = {
+        designer: "assets/server.php",
+        question: "assets/question.php"
+      };
+      let api;
+      item.closest(".popup-design") || item.classList.contains("form_calc") ? api = path.designer : api = path.question;
+      let formData = new FormData(item);
+      item.style.display = "none";
+      postData(api, formData).then(res => {
+        console.log(res);
+        console.log(api);
+        item.classList.add("animated", "fadeOutUp");
+        statusImg.setAttribute("src", message.ok);
+        statusText.textContent = message.success;
+      }).catch(err => {
+        console.log(err);
+        item.classList.add("animated", "fadeOutUp");
+        statusImg.setAttribute("src", message.fail);
+        statusText.textContent = message.failure;
+      }).finally(() => {
+        clearInpurs();
+        setTimeout(() => {
+          item.style.display = "block";
+          item.classList.remove("fadeOutUp");
+          item.classList.add("fadeInUp");
+          statusMessage.remove();
+          upload.forEach(item => {
+            item.previousElementSibling.innerText = "Файл не выбран";
+          });
+        }, 5000);
+      });
+    });
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (forms);
+
+/***/ }),
+
+/***/ "./src/js/modules/mask.js":
+/*!********************************!*\
+  !*** ./src/js/modules/mask.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+const mask = selector => {
+  const setCursorPosition = (pos, elem) => {
+    elem.focus();
+    if (elem.setSelectionRange) {
+      elem.setSelectionRange(pos, pos);
+    } else if (elem.createTextRange) {
+      let range = elem.createTextRange();
+      range.collapse(true);
+      range.moveEnd("character", pos);
+      range.moveStart("character", pos);
+      range.select();
+    }
+  };
+  function createMask(event) {
+    let matrix = "+7 (___) ___-__-__",
+      i = 0,
+      def = matrix.replace(/\D/g, ""),
+      val = this.value.replace(/\D/g, "");
+    if (def >= val.length) {
+      val = def;
+    }
+    this.value = matrix.replace(/./g, function (a) {
+      console.log("hello");
+      return /[_\d]/.test(a) && i < val.length ? val.charAt(i++) : i >= val.length ? "" : a;
+    });
+    if (event.type === "blur") {
+      if (this.value.length == 2) {
+        this.value = "";
+      }
+    } else {
+      setCursorPosition(this.value.length, this);
+    }
+  }
+  const inputs = document.querySelectorAll(selector);
+  inputs.forEach(input => {
+    input.addEventListener("input", createMask);
+    input.addEventListener("focus", createMask);
+    input.addEventListener("blur", createMask);
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (mask);
+
+/***/ }),
+
 /***/ "./src/js/modules/modals.js":
 /*!**********************************!*\
   !*** ./src/js/modules/modals.js ***!
@@ -269,6 +458,12 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
 /* harmony import */ var _modules_sliders__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/sliders */ "./src/js/modules/sliders.js");
+/* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
+/* harmony import */ var _modules_mask__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/mask */ "./src/js/modules/mask.js");
+/* harmony import */ var _modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/checkTextInputs */ "./src/js/modules/checkTextInputs.js");
+
+
+
 
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -277,6 +472,10 @@ window.addEventListener("DOMContentLoaded", () => {
   (0,_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])();
   (0,_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])(".feedback-slider-item", "horizontal", ".main-prev-btn", ".main-next-btn");
   (0,_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])(".main-slider-item", "vertical");
+  (0,_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])();
+  (0,_modules_mask__WEBPACK_IMPORTED_MODULE_3__["default"])('[name="phone"]');
+  (0,_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="name"]');
+  (0,_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="message"]');
 });
 })();
 
