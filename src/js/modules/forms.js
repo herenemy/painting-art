@@ -1,4 +1,6 @@
-const forms = () => {
+import { postData } from "./services/post";
+
+const forms = (state) => {
   const form = document.querySelectorAll("form"),
     input = document.querySelectorAll("input"),
     textArea = document.querySelectorAll("textarea"),
@@ -37,15 +39,6 @@ const forms = () => {
     });
   });
 
-  const postData = async (url, data) => {
-    const res = await fetch(url, {
-      method: "POST",
-      body: data,
-    });
-
-    return await res.text();
-  };
-
   form.forEach((item) => {
     item.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -75,6 +68,15 @@ const forms = () => {
         : (api = path.question);
 
       let formData = new FormData(item);
+      if (item.classList.contains("form_calc")) {
+        for (let key in state) {
+          formData.append(key, state[key]);
+        }
+      }
+
+      console.log(state);
+      console.log(formData);
+
       item.style.display = "none";
 
       postData(api, formData)

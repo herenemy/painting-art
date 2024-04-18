@@ -20,13 +20,11 @@ const mask = (selector) => {
       def = matrix.replace(/\D/g, ""),
       val = this.value.replace(/\D/g, "");
 
-    if (def >= val.length) {
+    if (def.length >= val.length) {
       val = def;
     }
 
     this.value = matrix.replace(/./g, function (a) {
-      console.log("hello");
-
       return /[_\d]/.test(a) && i < val.length
         ? val.charAt(i++)
         : i >= val.length
